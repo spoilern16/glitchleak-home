@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SIMULACRUM | Глитч в Матрице</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@400;700&family=PT+Sans:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  :root {
+    --green: #00ff50;
+    --green-dim: rgba(0,255,80,0.1);
+    --green-glow: rgba(0,255,80,0.3);
+    --bg: #030303;
+    --mono: 'Share Tech Mono', monospace;
+    --display: 'Oswald', sans-serif;
+    --body: 'PT Sans', sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { background: var(--bg); color: #fff; font-family: var(--body); min-height: 100vh; overflow-x: hidden; }
+
+  #matrix { position: fixed; inset: 0; opacity: 0.07; pointer-events: none; z-index: 0; }
+  body::before { content: ''; position: fixed; inset: 0; background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.12) 2px, rgba(0,0,0,0.12) 4px); pointer-events: none; z-index: 1; }
+  body::after { content: ''; position: fixed; inset: 0; background-image: linear-gradient(rgba(0,255,80,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(0,255,80,0.025) 1px, transparent 1px); background-size: 50px 50px; pointer-events: none; z-index: 0; }
+
+  .page { position: relative; z-index: 2; max-width: 600px; margin: 0 auto; padding: 0 0 60px; }
+
+  /* TOPBAR */
+  .topbar { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border-bottom: 1px solid rgba(0,255,80,0.1); background: rgba(0,0,0,0.7); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 100; }
+  .topbar-left { display: flex; align-items: center; gap: 10px; }
+  .dot { width: 7px; height: 7px; background: var(--green); border-radius: 50%; box-shadow: 0 0 8px var(--green); animation: blink 1.8s infinite; flex-shrink: 0; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+  .logo { font-family: var(--display); font-size: 16px; letter-spacing: 2px; }
+  .logo-sub { font-family: var(--mono); font-size: 9px; color: rgba(0,255,80,0.4); letter-spacing: 1px; }
+  .tg-btn { font-family: var(--mono); font-size: 11px; color: rgba(0,255,80,0.5); letter-spacing: 1px; text-decoration: none; border: 1px solid rgba(0,255,80,0.2); padding: 5px 12px; transition: all 0.2s; white-space: nowrap; }
+  .tg-btn:hover { background: var(--green-dim); color: var(--green); }
+
+  /* HERO */
+  .hero { padding: 52px 20px 40px; text-align: center; position: relative; overflow: hidden; }
+  .hero::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 100%, rgba(0,255,80,0.05) 0%, transparent 70%); pointer-events: none; }
+
+  .hero-label { font-family: var(--mono); font-size: 10px; color: rgba(0,255,80,0.5); letter-spacing: 4px; margin-bottom: 20px; }
+
+  .hero-title { font-family: var(--display); font-size: 56px; font-weight: 700; line-height: 1; letter-spacing: -2px; margin-bottom: 8px; }
+  .hero-title .green { color: var(--green); text-shadow: 0 0 30px var(--green-glow); display: block; }
+
+  .hero-tagline { font-size: 15px; color: rgba(255,255,255,0.4); line-height: 1.6; margin: 16px auto 32px; max-width: 340px; font-style: italic; }
+
+  /* Stats row */
+  .hero-stats { display: flex; justify-content: center; gap: 0; margin-bottom: 36px; }
+  .hero-stat { text-align: center; padding: 14px 24px; border: 1px solid rgba(255,255,255,0.06); }
+  .hero-stat:not(:last-child) { border-right: none; }
+  .hero-stat-num { font-family: var(--display); font-size: 26px; font-weight: 700; color: var(--green); }
+  .hero-stat-lbl { font-family: var(--mono); font-size: 8px; color: rgba(255,255,255,0.25); letter-spacing: 2px; margin-top: 3px; }
+
+  /* CTA */
+  .hero-cta { display: flex; gap: 10px; justify-content: center; }
+  .cta-primary { padding: 14px 28px; background: var(--green-dim); border: 1px solid rgba(0,255,80,0.35); color: var(--green); font-family: var(--display); font-size: 14px; letter-spacing: 3px; text-decoration: none; transition: all 0.2s; }
+  .cta-primary:hover { background: rgba(0,255,80,0.18); }
+  .cta-secondary { padding: 14px 22px; background: transparent; border: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.4); font-family: var(--mono); font-size: 11px; letter-spacing: 2px; text-decoration: none; transition: all 0.2s; }
+  .cta-secondary:hover { border-color: rgba(255,255,255,0.3); color: rgba(255,255,255,0.7); }
+
+  /* SECTION */
+  .section { margin: 32px 16px 0; }
+  .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .section-title { font-family: var(--mono); font-size: 9px; color: rgba(255,255,255,0.25); letter-spacing: 3px; }
+  .section-line { flex: 1; height: 1px; background: rgba(255,255,255,0.05); }
+
+  /* FEATURED POST */
+  .featured { background: rgba(0,255,80,0.03); border: 1px solid rgba(0,255,80,0.15); text-decoration: none; display: block; transition: all 0.2s; position: relative; overflow: hidden; }
+  .featured::before { content: 'НОВОЕ'; position: absolute; top: 12px; right: 12px; font-family: var(--mono); font-size: 8px; color: var(--green); letter-spacing: 2px; background: rgba(0,255,80,0.1); padding: 3px 8px; border: 1px solid rgba(0,255,80,0.2); }
+  .featured:hover { background: rgba(0,255,80,0.07); border-color: rgba(0,255,80,0.3); }
+  .featured-inner { padding: 22px 20px; }
+  .featured-tag { font-family: var(--mono); font-size: 9px; color: rgba(0,255,80,0.5); letter-spacing: 3px; margin-bottom: 10px; }
+  .featured-title { font-family: var(--display); font-size: 28px; font-weight: 700; color: #fff; line-height: 1.1; margin-bottom: 10px; }
+  .featured-title .g { color: var(--green); }
+  .featured-desc { font-size: 13px; color: rgba(255,255,255,0.5); line-height: 1.6; margin-bottom: 16px; }
+  .featured-footer { display: flex; justify-content: space-between; align-items: center; }
+  .featured-date { font-family: var(--mono); font-size: 9px; color: rgba(255,255,255,0.2); letter-spacing: 1px; }
+  .featured-read { font-family: var(--mono); font-size: 10px; color: var(--green); letter-spacing: 2px; }
+
+  /* POST CARDS GRID */
+  .cards-grid { display: flex; flex-direction: column; gap: 8px; }
+
+  .post-card { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); text-decoration: none; display: flex; align-items: stretch; transition: all 0.15s; overflow: hidden; }
+  .post-card:hover { background: rgba(0,255,80,0.04); border-color: rgba(0,255,80,0.15); }
+  .post-card-accent { width: 3px; flex-shrink: 0; background: rgba(0,255,80,0.2); }
+  .post-card-content { padding: 14px 16px; flex: 1; }
+  .post-card-tag { font-family: var(--mono); font-size: 8px; color: rgba(0,255,80,0.4); letter-spacing: 2px; margin-bottom: 6px; }
+  .post-card-title { font-family: var(--display); font-size: 18px; font-weight: 700; color: rgba(255,255,255,0.85); line-height: 1.2; margin-bottom: 5px; }
+  .post-card-desc { font-size: 12px; color: rgba(255,255,255,0.4); line-height: 1.5; }
+  .post-card-arrow { display: flex; align-items: center; padding: 0 16px; color: rgba(0,255,80,0.3); font-size: 18px; flex-shrink: 0; }
+
+  /* QUIZ BANNER */
+  .quiz-banner { background: rgba(0,0,0,0.4); border: 1px solid rgba(0,255,80,0.2); padding: 24px 20px; text-align: center; position: relative; overflow: hidden; text-decoration: none; display: block; transition: all 0.2s; }
+  .quiz-banner:hover { background: rgba(0,255,80,0.05); }
+  .quiz-banner::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 50%, rgba(0,255,80,0.06) 0%, transparent 70%); }
+  .quiz-rabbit { font-size: 40px; display: block; margin-bottom: 10px; animation: float 3s ease-in-out infinite; }
+  @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+  .quiz-title { font-family: var(--display); font-size: 22px; font-weight: 700; color: #fff; margin-bottom: 6px; position: relative; }
+  .quiz-desc { font-size: 13px; color: rgba(255,255,255,0.4); margin-bottom: 16px; position: relative; }
+  .quiz-btn { display: inline-block; padding: 10px 24px; background: var(--green); color: #000; font-family: var(--display); font-size: 13px; font-weight: 700; letter-spacing: 3px; position: relative; transition: opacity 0.2s; }
+  .quiz-btn:hover { opacity: 0.85; }
+
+  /* PHILOSOPHY SECTION */
+  .philosophy { border: 1px solid rgba(255,255,255,0.05); padding: 24px 20px; background: rgba(0,0,0,0.2); }
+  .philosophy-text { font-size: 18px; line-height: 1.75; color: rgba(255,255,255,0.55); font-style: italic; text-align: center; }
+  .philosophy-author { font-family: var(--mono); font-size: 10px; color: rgba(0,255,80,0.35); letter-spacing: 2px; text-align: center; margin-top: 14px; }
+
+  /* FOOTER */
+  .footer { margin: 32px 16px 0; padding: 24px 20px; border: 1px solid rgba(255,255,255,0.04); text-align: center; }
+  .footer-logo { font-family: var(--display); font-size: 20px; letter-spacing: 3px; color: rgba(255,255,255,0.7); margin-bottom: 8px; }
+  .footer-tagline { font-family: var(--mono); font-size: 10px; color: rgba(255,255,255,0.2); letter-spacing: 2px; margin-bottom: 16px; line-height: 1.8; }
+  .footer-tg { display: inline-block; font-family: var(--mono); font-size: 12px; color: rgba(0,255,80,0.5); letter-spacing: 1px; text-decoration: none; border: 1px solid rgba(0,255,80,0.15); padding: 8px 20px; transition: all 0.2s; }
+  .footer-tg:hover { background: var(--green-dim); color: var(--green); }
+
+  /* SITENAV */
+  .sitenav { margin: 24px 16px 0; }
+  .sitenav-label { font-family: var(--mono); font-size: 9px; color: rgba(255,255,255,0.2); letter-spacing: 3px; margin-bottom: 10px; }
+  .sitenav-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+  .sitenav-item { display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 10px 4px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); text-decoration: none; transition: all 0.15s; }
+  .sitenav-item:hover, .sitenav-item.active { background: rgba(0,255,80,0.08); border-color: rgba(0,255,80,0.25); }
+  .sitenav-icon { font-size: 18px; line-height: 1; }
+  .sitenav-text { font-family: var(--mono); font-size: 7px; color: rgba(255,255,255,0.3); letter-spacing: 0.5px; text-align: center; }
+  .sitenav-item:hover .sitenav-text, .sitenav-item.active .sitenav-text { color: var(--green); }
+
+</style>
+</head>
+<body>
+<canvas id="matrix"></canvas>
+
+<div class="page">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="dot"></div>
+      <div>
+        <div class="logo">SIMULACRUM</div>
+        <div class="logo-sub">// ГЛИТЧ В МАТРИЦЕ</div>
+      </div>
+    </div>
+    <a href="https://t.me/glitchleak" class="tg-btn">🐇 @glitchleak</a>
+  </div>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-label">// ДОБРО ПОЖАЛОВАТЬ В ПУСТЫНЮ РЕАЛЬНОСТИ</div>
+    <div class="hero-title">
+      МИР — ЭТО КОПИЯ,
+      <span class="green">У КОТОРОЙ НЕТ ОРИГИНАЛА</span>
+    </div>
+    <div class="hero-tagline">
+      Исследуем цифровые манипуляции, симулякры и способы проснуться в мире имитаций
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="hero-stat-num">7</div>
+        <div class="hero-stat-lbl">ПОСТОВ</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-num">5</div>
+        <div class="hero-stat-lbl">РУБРИК</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-num">∞</div>
+        <div class="hero-stat-lbl">СИМУЛЯКРОВ</div>
+      </div>
+    </div>
+    <div class="hero-cta">
+      <a href="https://t.me/glitchleak" class="cta-primary">▶ ПОДПИСАТЬСЯ</a>
+      <a href="https://spoilern16.github.io/glitchleak-quiz" class="cta-secondary">ПРОЙТИ ТЕСТ</a>
+    </div>
+  </div>
+
+  <!-- FEATURED -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">// ПОСЛЕДНИЙ ГЛИТЧ</div>
+      <div class="section-line"></div>
+    </div>
+    <a href="https://spoilern16.github.io/glitchleak-news" class="featured">
+      <div class="featured-inner">
+        <div class="featured-tag">📡 ГЛИТЧ НЕДЕЛИ — 02.03.2026</div>
+        <div class="featured-title">СЕГОДНЯ. <span class="g">РУНЕТ СДАН.</span></div>
+        <div class="featured-desc">РКН, ФСБ и Минцифры получили полный контроль над интернетом. ИИ за 2,3 млрд ₽ будет блокировать людей, а не сайты. Учения по отключению — раз в год.</div>
+        <div class="featured-footer">
+          <div class="featured-date">02.03.2026</div>
+          <div class="featured-read">ЧИТАТЬ →</div>
+        </div>
+      </div>
+    </a>
+  </div>
+
+  <!-- POSTS -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">// ВСЕ МАТЕРИАЛЫ</div>
+      <div class="section-line"></div>
+    </div>
+    <div class="cards-grid">
+
+      <a href="https://spoilern16.github.io/glitchleak-simulacrum" class="post-card">
+        <div class="post-card-accent"></div>
+        <div class="post-card-content">
+          <div class="post-card-tag">🧠 КОНЦЕПЦИЯ</div>
+          <div class="post-card-title">Симулякр — это не подделка</div>
+          <div class="post-card-desc">Бодрийяр объяснил это ещё в 1981. Почему это важно прямо сейчас.</div>
+        </div>
+        <div class="post-card-arrow">›</div>
+      </a>
+
+      <a href="https://spoilern16.github.io/glitchleak-1971" class="post-card">
+        <div class="post-card-accent"></div>
+        <div class="post-card-content">
+          <div class="post-card-tag">🕳 КРОЛИЧЬЯ НОРА</div>
+          <div class="post-card-title">После 1971 года правила сменились</div>
+          <div class="post-card-desc">Производительность +65%. Зарплаты — ноль. Куда ушла разница?</div>
+        </div>
+        <div class="post-card-arrow">›</div>
+      </a>
+
+      <a href="https://spoilern16.github.io/glitchleak-news" class="post-card">
+        <div class="post-card-accent"></div>
+        <div class="post-card-content">
+          <div class="post-card-tag">📡 ГЛИТЧ НЕДЕЛИ</div>
+          <div class="post-card-title">Сегодня. Рунет сдан.</div>
+          <div class="post-card-desc">Новый пакет законов. Что изменилось с 1 марта 2026 года.</div>
+        </div>
+        <div class="post-card-arrow">›</div>
+      </a>
+
+    </div>
+  </div>
+
+  <!-- QUIZ BANNER -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">// ИНТЕРАКТИВ</div>
+      <div class="section-line"></div>
+    </div>
+    <a href="https://spoilern16.github.io/glitchleak-quiz" class="quiz-banner">
+      <span class="quiz-rabbit">🐇</span>
+      <div class="quiz-title">Насколько ты в Матрице?</div>
+      <div class="quiz-desc">7 вопросов. 5 уровней погружения. Никаких правильных ответов.</div>
+      <span class="quiz-btn">▶ ПРИНЯТЬ ВЫЗОВ</span>
+    </a>
+  </div>
+
+  <!-- PHILOSOPHY -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">// МАНИФЕСТ</div>
+      <div class="section-line"></div>
+    </div>
+    <div class="philosophy">
+      <div class="philosophy-text">
+        «Мы живём в мире, где всё больше информации и всё меньше смысла»
+      </div>
+      <div class="philosophy-author">— ЖАН БОДРИЙЯР</div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  
+<div class="sitenav">
+  <div class="sitenav-label">// ВСЕ МАТЕРИАЛЫ</div>
+  <div class="sitenav-grid">
+<a href="https://spoilern16.github.io/glitchleak-home" class="sitenav-item active"><span class="sitenav-icon">🏠</span><span class="sitenav-text">Главная</span></a>
+<a href="https://spoilern16.github.io/glitchleak-news" class="sitenav-item"><span class="sitenav-icon">📡</span><span class="sitenav-text">РКН</span></a>
+<a href="https://spoilern16.github.io/glitchleak-simulacrum" class="sitenav-item"><span class="sitenav-icon">🧠</span><span class="sitenav-text">Симулякр</span></a>
+<a href="https://spoilern16.github.io/glitchleak-1971" class="sitenav-item"><span class="sitenav-icon">🕳</span><span class="sitenav-text">1971</span></a>
+<a href="https://spoilern16.github.io/glitchleak-quiz" class="sitenav-item"><span class="sitenav-icon">🐇</span><span class="sitenav-text">Тест</span></a>
+  </div>
+</div>
+
+  <div class="footer">
+    <div class="footer-logo">SIMULACRUM</div>
+    <div class="footer-tagline">
+      ГЛИТЧ В МАТРИЦЕ<br>
+      Мир — это копия, у которой нет оригинала
+    </div>
+    <a href="https://t.me/glitchleak" class="footer-tg">🐇 @glitchleak</a>
+  </div>
+
+</div>
+
+<script>
+const canvas = document.getElementById('matrix');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+const ctx = canvas.getContext('2d');
+const cols = Math.floor(canvas.width / 16);
+const drops = Array(cols).fill(1);
+const chars = 'アイウエオ01SIMULACRUMМАТРИЦА';
+function draw() {
+  ctx.fillStyle = 'rgba(0,0,0,0.05)';
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle = '#00ff50';
+  ctx.font = '13px monospace';
+  drops.forEach((y,i) => {
+    ctx.fillText(chars[Math.floor(Math.random()*chars.length)], i*16, y*16);
+    if (y*16 > canvas.height && Math.random() > 0.975) drops[i] = 0;
+    drops[i]++;
+  });
+}
+setInterval(draw, 60);
+if (window.Telegram && window.Telegram.WebApp) {
+  Telegram.WebApp.ready();
+  Telegram.WebApp.expand();
+}
+</script>
+</body>
+</html>
